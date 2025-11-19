@@ -16,7 +16,7 @@ export default function VoiceRecorder({ onTranscript }) {
       const fd = new FormData();
       fd.append("audio", blob, "voice.webm");
 
-      const res = await fetch("http://localhost:3000/api/stt", {
+      const res = await fetch("https://living-butler.onrender.com/api/stt", {
         method: "POST",
         body: fd,
       });
