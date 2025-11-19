@@ -41,7 +41,7 @@ export default function App() {
   // ------------- AI 語音播放 (TTS) -------------
   const playVoice = async (text) => {
     try {
-      const res = await fetch("http://localhost:3000/api/tts", {
+      const res = await fetch("https://living-butler.onrender.com/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
@@ -130,7 +130,7 @@ export default function App() {
   // ------------- AI 聊天回覆 -------------
   const requestAI = async (text) => {
     try {
-      const res = await fetch("http://localhost:3000/api/chat", {
+      const res = await fetch("https://living-butler.onrender.com/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
@@ -147,7 +147,7 @@ export default function App() {
   // ------------- AI 健康趨勢分析 -------------
   const analyzeHealth = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/health-analysis", {
+      const res = await fetch("https://living-butler.onrender.com/api/health-analysis", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ history: healthHistory }),
@@ -175,7 +175,7 @@ export default function App() {
   // ------------- 每日關懷語 -------------
   const generateCareMessage = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/care");
+      const res = await fetch("https://living-butler.onrender.com/api/care");
       const data = await res.json();
       setCareMessage(data.message);
     } catch {
