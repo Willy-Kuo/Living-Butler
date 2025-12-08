@@ -94,6 +94,39 @@ body {
   color: white;
 }
 
+/* ⭐ Header 右側：使用者 / 登出 / 主題切換 */
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-name {
+  font-size: 16px;
+  color: var(--text);
+}
+
+.logout-btn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.logout-btn:hover {
+  background: #e9e9e9;
+}
+
 
 /* ======================================== */
 /*              CareCard                    */
@@ -605,38 +638,274 @@ body {
   transform: translateX(4px);
 }
 
+.chart-card {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  margin: 20px 0;
+}
 
-.auth-container {
+.chart-card h3 {
+  margin-bottom: 15px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* ========================= */
+/* 登入 / 註冊面板 — 白色版  */
+/* ========================= */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.15);   /* 背景淡淡灰 */
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: var(--bg);
+  z-index: 2000;
+  animation: auth-fade-in 0.2s ease-out;
 }
+
 .auth-card {
-  background: var(--card);
-  padding: 40px;
+  background: #ffffff;  /* ⭐ 白色背景 */
+  padding: 28px 30px;
   border-radius: 20px;
-  box-shadow: 0 10px 25px var(--shadow);
-  width: 100%;
-  max-width: 400px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15); /* 柔和陰影 */
+  width: 360px;
+  max-width: 92vw;
+  border: 1px solid #e8e8e8;   /* 淺灰邊框 */
+  position: relative;
+}
+
+.auth-card h2 {
+  margin-top: 0;
   text-align: center;
+  font-size: 22px;
+  margin-bottom: 10px;
+  letter-spacing: 0.02em;
+  color: #222; /* 深色標題 */
 }
-.auth-card h2 { margin-bottom: 20px; color: var(--text); }
-.input-group { text-align: left; margin-bottom: 15px; }
-.input-group label { display: block; margin-bottom: 5px; color: var(--text); }
-.input-group input { 
-  width: 95%; padding: 10px; border-radius: 8px; 
-  border: 1px solid #ccc; font-size: 16px; 
+
+.auth-subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: #666; /* 淺灰文字 */
+  margin-bottom: 18px;
 }
-.auth-btn {
-  width: 100%; padding: 12px; font-size: 18px;
-  background: var(--primary); color: white;
-  border: none; border-radius: 10px; cursor: pointer;
-  margin-top: 10px;
+
+/* 表單本體 */
+.auth-form .input-row {
+  margin-bottom: 16px;
 }
+
+.auth-form .input-row label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #444; /* 深灰 */
+}
+
+.auth-form .input-row input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+  box-sizing: border-box;
+  background: #fafafa; /* 淺灰白 */
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.2s;
+}
+
+/* 聚焦效果 */
+.auth-form .input-row input:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(100, 150, 255, 0.25);
+}
+
+/* 錯誤訊息 */
+.auth-error {
+  margin-top: -6px;
+  margin-bottom: 8px;
+  color: #d9534f; /* 鮮紅 */
+  font-size: 13px;
+  text-align: left;
+}
+
+/* 主按鈕（登入/註冊） */
+.auth-submit-btn {
+  width: 100%;
+  padding: 10px 0;
+  border-radius: 999px;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.1s;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+}
+
+.auth-submit-btn:hover {
+  background: #4c8dff;
+  transform: translateY(-1px);
+}
+
+.auth-submit-btn:active {
+  transform: translateY(0);
+}
+
+/* 切換登入/註冊 */
 .auth-switch {
-  margin-top: 15px; color: var(--primary);
-  cursor: pointer; text-decoration: underline;
+  margin-top: 12px;
+  text-align: center;
+  font-size: 14px;
+  color: #444;
 }
-.auth-error { color: #ff4d4d; margin-bottom: 10px; }
+
+.auth-switch button {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.auth-switch button:hover {
+  opacity: 0.7;
+}
+
+/* 動畫 */
+@keyframes auth-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================= */
+/* 手動健康輸入 panel（白色） */
+/* ========================= */
+
+.hip-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.health-input-panel input {
+  padding: 9px 12px;
+  font-size: 15px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: #fafafa;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.hip-bp-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ======================================== */
+/*      語音暫存提示 ＋ 結束輸入按鈕區塊      */
+/* ======================================== */
+
+/* 暫存中的健康資料提示文字 */
+.pending-hint {
+  margin: 10px 0 5px 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #fffbe6;
+  border: 1px solid #ffe58f;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #8c6d1f;
+}
+
+/* 容納「結束輸入數據並更新圖表」按鈕的區塊 */
+.confirm-health-zone {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 20px 0;
+}
+
+/* ✅ 結束輸入數據並更新圖表 */
+.confirm-health-btn {
+  padding: 12px 22px;
+  border-radius: 999px;
+  border: none;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+
+  background: linear-gradient(135deg, #43a047, #2e7d32);
+  color: #fff;
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s ease;
+}
+
+/* hover 效果 */
+.confirm-health-btn:hover:not(:disabled) {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+/* 按下效果 */
+.confirm-health-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* disabled 狀態（沒有暫存資料時） */
+.confirm-health-btn:disabled {
+  background: #bdbdbd;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* 結束輸入並更新圖表按鈕 */
+.commit-row {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 20px 0;
+}
+
+.health-commit-btn {
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: none;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  letter-spacing: 0.5px;
+  transition: 0.2s ease;
+}
+
+.health-commit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+}
+
+.health-commit-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+}

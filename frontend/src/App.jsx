@@ -29,6 +29,18 @@ export default function App() {
 
 
   const [healthHistory, setHealthHistory] = useState([]);
+  const [pendingHealth, setPendingHealth] = useState(null);
+
+  function fillHealthDefaults(data) {
+    return {
+      heartRate: data.heartRate ?? 72,
+      bloodPressure: data.bloodPressure ?? "118 / 75",
+      glucose: data.glucose ?? 95,
+      steps: data.steps ?? 3000,
+      sleep: data.sleep ?? 7,
+      mood: data.mood ?? "🙂 良好",
+    };
+  }
 
 // 檢查是否已登入
 useEffect(() => {
@@ -151,17 +163,19 @@ useEffect(() => {
   // ------------- 語音輸入處理 -------------
   const onTranscript = async (text) => {
     addMessage("user", text);
-
     const updates = parseHealthData(text);
+
     if (Object.keys(updates).length > 0) {
-      const newHealth = { ...health, ...updates };
+      const base = pendingHealth || health;
+      const newHealth = fillHealthDefaults({ ...base, ...updates });
 
-    try {
+      try {
         const res = await API.post("/health/manual", newHealth);
+        setPendingHealth(newHealth);
         setHealth(res.data.currentHealth);
-        setHealthHistory(res.data.healthHistory);
 
-        const notify = "👌 已更新健康數據並存檔！我也可以幫您分析趨勢喔。";
+        const notify =
+          "👌 已更新暫存健康數據，可以繼續分段說。完成後請按「結束輸入數據」喔～";
         addMessage("assistant", notify);
         playVoice(notify);
       } catch (err) {
@@ -182,7 +196,8 @@ useEffect(() => {
       const data = await res.data;
       addMessage("assistant", data.reply);
       playVoice(data.reply);
-    } catch {
+    } catch (err) {
+      console.error("AI chat error:", err);
       addMessage("assistant", "⚠ AI 回覆失敗");
     }
   };
@@ -190,19 +205,53 @@ useEffect(() => {
   // ------------- AI 健康趨勢分析 -------------
   const analyzeHealth = async () => {
     try {
-      const res = await API.post("/health-analysis", { history: healthHistory });
+      if (healthHistory.length === 0) {
+        const msg = "目前還沒有足夠的健康紀錄喔～";
+        addMessage("assistant", msg);
+        playVoice(msg);
+        return;
+      }
 
-      const data = await res.data;
-      addMessage("assistant", data.reply);
-      playVoice(data.reply);
-    } catch {
+      const res = await API.post("/health-analysis", {
+        history: healthHistory,
+      });
+
+      const reply = res.data.analysis || "暫時無法分析～稍後再試看看喔！";
+      addMessage("assistant", reply);
+      playVoice(reply);
+    } catch (err) {
+      console.error("健康趨勢分析錯誤：", err);
       addMessage("assistant", "⚠ 趨勢分析失敗");
     }
   };
 
+  // ---------------- 儲存健康資料 ----------------
+  const confirmPendingHealth = async () => {
+    if (!pendingHealth) {
+      const msg = "目前沒有新的健康數據喔～";
+      addMessage("assistant", msg);
+      playVoice(msg);
+      return;
+    }
+
+    const full = fillHealthDefaults(pendingHealth);
+    try {
+      const res = await API.post("/health/manual", full);
+      setHealthHistory(res.data.healthHistory);
+      setPendingHealth(null);
+
+      const msg = "✅ 已記錄並更新折線圖。";
+      addMessage("assistant", msg);
+      playVoice(msg);
+      } catch (err) {
+        console.error("存檔失敗", err);
+        addMessage("assistant", "⚠ 數據更新失敗，請檢查網路");
+      }
+  };
+
   // ------------- 手動健康輸入 -------------
   const handleManualHealth = async (data) => {
-    const newHealth = { ...health, ...data };
+    const newHealth = fillHealthDefaults({ ...health, ...data });
     try{
       const res = await API.post("/health/manual", newHealth);
       setHealth(res.data.currentHealth);
@@ -225,12 +274,13 @@ useEffect(() => {
       const res = await API.get("/care");
       const data = await res.data;
       setCareMessage(data.message);
-    } catch {
+    } catch (err) {
+      console.error("Care API error:", err);
       setCareMessage("今天也要記得吃飯喔！");
     }
   };
 
-
+  // ---------------- 未登入 ----------------
   if (!user) {
     return (
       <div className={`app-root ${theme}`}>
@@ -240,27 +290,26 @@ useEffect(() => {
     );
   }
 
+  // ---------------- 主畫面 ----------------
   return (
     <div className={`app-root ${theme}`}>
-      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-        <Header theme={theme} toggleTheme={toggleTheme} />
-        <button onClick={handleLogout} style={{padding:'8px 16px', borderRadius:'20px', border:'1px solid #ccc', cursor:'pointer'}}>
-          登出 {user.username}
-        </button>
-      </div>
+      <Header theme={theme} toggleTheme={toggleTheme} user={user} onLogout={handleLogout} />
 
       <CareCard careMessage={careMessage} onGenerate={generateCareMessage} />
 
-      {/* ⭐ AI 健康趨勢分析按鈕 */}
-      <button class="ai-health-btn arrow">
-        📊 AI 健康趨勢分析
-        <span class="arrow-icon">➜</span>
+      <button className="ai-health-btn arrow" onClick={analyzeHealth}>
+        📊 AI 健康趨勢分析 <span className="arrow-icon">➜</span>
       </button>
 
-      <HealthDashboard health={health} />
-
-      {/* ⭐ 健康折線圖 */}
+      <HealthDashboard health={health || {}} />
       <HealthChart history={healthHistory} />
+
+      {pendingHealth && (
+        <div className="pending-hint">
+          已更新暫存健康資料，可繼續用語音補充～
+          <strong>完成後請按「結束輸入數據」</strong>
+        </div>
+      )}
 
       <div className="input-mode-switch">
         <button
@@ -279,6 +328,16 @@ useEffect(() => {
       </div>
 
       <HealthInputPanel mode={inputMode} onUpdate={handleManualHealth} />
+
+      <div className="confirm-health-zone">
+        <button
+          className="confirm-health-btn"
+          onClick={confirmPendingHealth}
+          disabled={!pendingHealth}
+        >
+          ✅ 結束輸入數據並更新圖表
+        </button>
+      </div>
 
       <ChatWindow messages={messages} />
 

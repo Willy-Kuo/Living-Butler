@@ -5,46 +5,72 @@ export default function HealthInputPanel({ mode, onUpdate }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    const form = new FormData(e.target);
     const data = {
-      bloodPressure: e.target.bp.value,
-      heartRate: Number(e.target.heart.value),
-      glucose: Number(e.target.glucose.value),
-      steps: Number(e.target.steps.value),
-      sleep: Number(e.target.sleep.value),
-      mood: e.target.mood.value,
+      heartRate: Number(form.get("heartRate")),
+      bloodPressure: `${form.get("bpHigh")} / ${form.get("bpLow")}`,
+      glucose: Number(form.get("glucose")),
+      steps: Number(form.get("steps")),
+      sleep: Number(form.get("sleep")),
+      mood: form.get("mood"),
     };
 
     onUpdate(data);
+    e.target.reset();
   };
 
   return (
     <form className="health-input-panel" onSubmit={handleSubmit}>
-      <h3>✍️ 手動輸入健康數據</h3>
+      <h3 className="hip-title">✍️ 手動輸入健康數據</h3>
 
-      <label>血壓（例如：120 / 80）</label>
-      <input name="bp" placeholder="118 / 75" />
+      <div className="hip-row">
+        <label>心跳（bpm）</label>
+        <input name="heartRate" type="number" placeholder="例如：75" required />
+      </div>
 
-      <label>心跳（次/分）</label>
-      <input name="heart" type="number" placeholder="72" />
+      <div className="hip-row">
+        <label>血壓（mmHg）</label>
+        <div className="hip-bp-group">
+          <input name="bpHigh" type="number" placeholder="收縮壓" required />
+          <span>/</span>
+          <input name="bpLow" type="number" placeholder="舒張壓" required />
+        </div>
+      </div>
 
-      <label>血糖（mg/dL）</label>
-      <input name="glucose" type="number" placeholder="95" />
+      <div className="hip-row">
+        <label>血糖（mg/dL）</label>
+        <input name="glucose" type="number" placeholder="例如：110" required />
+      </div>
 
-      <label>今日步數</label>
-      <input name="steps" type="number" placeholder="4000" />
+      <div className="hip-row">
+        <label>今日步數</label>
+        <input name="steps" type="number" placeholder="例如：3500" required />
+      </div>
 
-      <label>睡眠時數</label>
-      <input name="sleep" type="number" step="0.1" placeholder="7.5" />
+      <div className="hip-row">
+        <label>睡眠（小時）</label>
+        <input
+          name="sleep"
+          type="number"
+          step="0.1"
+          placeholder="例如：7.5"
+          required
+        />
+      </div>
 
-      <label>心情</label>
-      <select name="mood">
-        <option>😄 開心</option>
-        <option>🙂 普通</option>
-        <option>😊 放鬆</option>
-        <option>😢 難過</option>
-        <option>😡 生氣</option>
-        <option>😣 不舒服</option>
-      </select>
+      {/* ⭐ 新增心情輸入欄位 */}
+      <div className="hip-row">
+        <label>心情狀態</label>
+        <select name="mood" defaultValue="🙂 良好" required>
+          <option>😄 開心</option>
+          <option>🙂 良好</option>
+          <option>😐 普通</option>
+          <option>😪 疲倦</option>
+          <option>😢 難過</option>
+          <option>😡 生氣</option>
+          <option>😣 不舒服</option>
+        </select>
+      </div>
 
       <button type="submit" className="health-submit">✔ 更新健康數據</button>
     </form>

@@ -111,14 +111,8 @@ export default function HealthChart({ history }) {
     },
     plugins: {
       legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: '📈 健康折線圖趨勢',
-        font: {
-          size: 16
-        }
+        position: "top",
+        labels: { font: { size: 13 } },
       },
     },
     scales: {
@@ -134,6 +128,7 @@ export default function HealthChart({ history }) {
 
   return (
     <div className="chart-card">
+      <h3>📈 健康折線圖趨勢</h3>
       <Line data={data} options={options} />
     </div>
   );
