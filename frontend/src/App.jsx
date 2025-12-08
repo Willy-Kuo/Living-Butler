@@ -42,6 +42,23 @@ export default function App() {
     };
   }
 
+const normalizeText = (text) => {
+  if (!text) return "";
+  let newText = text;
+  
+  const map = {
+    "一": "1", "二": "2", "三": "3", "四": "4", "五": "5",
+    "六": "6", "七": "7", "八": "8", "九": "9", "零": "0",
+    "十": "10", "百": "",
+  };
+
+  Object.keys(map).forEach((key) => {
+    newText = newText.split(key).join(map[key]);
+  });
+  
+  return newText;
+};
+
 // 檢查是否已登入
 useEffect(() => {
     const initData = async () => {
@@ -110,7 +127,8 @@ useEffect(() => {
   };
 
   // ------------- 健康語音解析 -------------
-  const parseHealthData = (text) => {
+  const parseHealthData = (rawText) => {
+    const text = normalizeText(rawText);
     let updated = {};
 
     // 血壓
@@ -144,16 +162,16 @@ useEffect(() => {
 
     // 心情
     const moodMap = [
-      { keywords: ["開心", "高興", "愉快"], mood: "😄 開心" },
+      { keywords: ["開心", "高興", "愉快", "不錯"], mood: "😄 開心" },
       { keywords: ["放鬆", "舒服"], mood: "😊 放鬆" },
-      { keywords: ["普通"], mood: "🙂 普通" },
-      { keywords: ["難過", "悲傷"], mood: "😢 難過" },
-      { keywords: ["生氣"], mood: "😡 生氣" },
+      { keywords: ["普通", "一般"], mood: "🙂 普通" },
+      { keywords: ["難過", "悲傷", "心情不好"], mood: "😢 難過" },
+      { keywords: ["生氣", "不爽", "火大"], mood: "😡 生氣" },
       { keywords: ["疲倦", "累"], mood: "😪 疲倦" },
-      { keywords: ["不舒服", "頭痛"], mood: "😣 不舒服" },
+      { keywords: ["不舒服", "頭痛", "怪怪"], mood: "😣 不舒服" },
     ];
     const moodHit = moodMap.find((m) =>
-      m.keywords.some((kw) => text.includes(kw))
+      m.keywords.some((kw) => rawText.includes(kw))
     );
     if (moodHit) updated.mood = moodHit.mood;
 
@@ -161,7 +179,7 @@ useEffect(() => {
   };
 
   // ------------- 語音輸入處理 -------------
-  const onTranscript = async (text) => {
+  const onTranscript = (text) => {
     addMessage("user", text);
     const updates = parseHealthData(text);
 
@@ -169,19 +187,13 @@ useEffect(() => {
       const base = pendingHealth || health;
       const newHealth = fillHealthDefaults({ ...base, ...updates });
 
-      try {
-        const res = await API.post("/health/manual", newHealth);
-        setPendingHealth(newHealth);
-        setHealth(res.data.currentHealth);
+      setPendingHealth(newHealth);
+      setHealth(newHealth);
 
-        const notify =
-          "👌 已更新暫存健康數據，可以繼續分段說。完成後請按「結束輸入數據」喔～";
-        addMessage("assistant", notify);
-        playVoice(notify);
-      } catch (err) {
-        console.error("存檔失敗", err);
-        addMessage("assistant", "⚠ 數據更新失敗，請檢查網路");
-      }
+      const notify =
+        "👌 已更新暫存健康數據，可以繼續分段說。完成後請按「結束輸入數據」喔～";
+      addMessage("assistant", notify);
+      playVoice(notify);
       return;
     }
 
@@ -237,6 +249,7 @@ useEffect(() => {
     const full = fillHealthDefaults(pendingHealth);
     try {
       const res = await API.post("/health/manual", full);
+      setHealth(res.data.currentHealth);
       setHealthHistory(res.data.healthHistory);
       setPendingHealth(null);
 
