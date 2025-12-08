@@ -42,22 +42,28 @@ export default function App() {
     };
   }
 
-const normalizeText = (text) => {
-  if (!text) return "";
-  let newText = text;
-  
-  const map = {
-    "一": "1", "二": "2", "三": "3", "四": "4", "五": "5",
-    "六": "6", "七": "7", "八": "8", "九": "9", "零": "0",
-    "十": "10", "百": "",
-  };
-
-  Object.keys(map).forEach((key) => {
-    newText = newText.split(key).join(map[key]);
-  });
-  
-  return newText;
+const chineseMap = {
+  "零": 0, "○": 0, "〇": 0,
+  "一": 1, "二": 2, "兩": 2,
+  "三": 3, "四": 4, "五": 5,
+  "六": 6, "七": 7, "八": 8,
+  "九": 9, "十": 10, "百": 100, "千": 1000,
 };
+
+function chineseToNumber(str) {
+  let total = 0, section = 0, number = 0;
+  for (const char of str) {
+    const val = chineseMap[char];
+    if (val == null) continue;
+
+    if (val < 10) number = val;
+    else {
+      section += (number || 1) * val;
+      number = 0;
+    }
+  }
+  return total + section + number;
+}
 
 // 檢查是否已登入
 useEffect(() => {
@@ -128,7 +134,13 @@ useEffect(() => {
 
   // ------------- 健康語音解析 -------------
   const parseHealthData = (rawText) => {
-    const text = normalizeText(rawText);
+    if (!rawText) return {};
+
+    let text = rawText.replace(
+      /[零○〇一二兩三四五六七八九十百千]+/g,
+      (match) => chineseToNumber(match)
+    );
+
     let updated = {};
 
     // 血壓
