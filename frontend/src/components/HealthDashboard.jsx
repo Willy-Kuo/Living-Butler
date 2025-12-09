@@ -8,7 +8,7 @@ export default function HealthDashboard({ health }) {
 
     heart: health.heartRate > 100 || health.heartRate < 50,
 
-    glucose: health.glucose > 130 || health.glucose < 70,
+    glucose: health.glucose > 100 || health.glucose < 60,
   };
 
   return (

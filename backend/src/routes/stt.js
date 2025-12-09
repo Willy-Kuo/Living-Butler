@@ -17,7 +17,7 @@ router.post("/", upload.single("audio"), async (req, res) => {
     // ⭐ 手動建立 multipart form（唯一 100% 可用的方式）
     const form = new FormData();
     form.append("model", "gpt-4o-mini-transcribe");
-    form.append("language", "zh");
+    form.append("language", "zh-TW");
 
     // ⭐ 非常重要：必須傳 buffer + 檔名 + MIME
     form.append("file", req.file.buffer, {
